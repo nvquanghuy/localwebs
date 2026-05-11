@@ -1,8 +1,23 @@
 let autoRefreshInterval;
-let currentView = 'grid'; // 'grid' or 'list'
+let currentView = localStorage.getItem('localwebs-view') || 'grid';
 let currentServices = [];
-let sortBy = 'port';
-let sortAscending = true;
+let sortBy = localStorage.getItem('localwebs-sortBy') || 'port';
+let sortAscending = localStorage.getItem('localwebs-sortAscending') !== 'false'; // Default true
+
+// Initialize UI from saved preferences
+function initializeUI() {
+    // Set view toggle button text
+    const toggleBtn = document.getElementById('view-toggle-btn');
+    toggleBtn.textContent = currentView === 'grid' ? '📋 List View' : '🎴 Grid View';
+
+    // Set sort dropdown
+    const sortSelect = document.getElementById('sort-select');
+    sortSelect.value = sortBy;
+
+    // Set sort order button
+    const sortOrderBtn = document.getElementById('sort-order-btn');
+    sortOrderBtn.textContent = sortAscending ? '↑' : '↓';
+}
 
 async function fetchServices() {
     try {
@@ -225,6 +240,9 @@ function toggleView() {
     const toggleBtn = document.getElementById('view-toggle-btn');
     toggleBtn.textContent = currentView === 'grid' ? '📋 List View' : '🎴 Grid View';
 
+    // Save preference
+    localStorage.setItem('localwebs-view', currentView);
+
     displayServices(currentServices);
 }
 
@@ -233,11 +251,18 @@ function toggleSortOrder() {
     const sortOrderBtn = document.getElementById('sort-order-btn');
     sortOrderBtn.textContent = sortAscending ? '↑' : '↓';
 
+    // Save preference
+    localStorage.setItem('localwebs-sortAscending', sortAscending);
+
     displayServices(currentServices);
 }
 
 function changeSortBy(value) {
     sortBy = value;
+
+    // Save preference
+    localStorage.setItem('localwebs-sortBy', sortBy);
+
     displayServices(currentServices);
 }
 
@@ -262,6 +287,9 @@ document.getElementById('refresh-btn').addEventListener('click', async () => {
 document.getElementById('view-toggle-btn').addEventListener('click', toggleView);
 document.getElementById('sort-select').addEventListener('change', (e) => changeSortBy(e.target.value));
 document.getElementById('sort-order-btn').addEventListener('click', toggleSortOrder);
+
+// Initialize UI with saved preferences
+initializeUI();
 
 // Initial load
 fetchServices();
