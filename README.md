@@ -22,13 +22,37 @@ A Rust-based service discovery portal that helps you track all HTTP services run
 
 ## Installation
 
-```bash
-# Build the project
-cargo build --release
+### Quick Install (Recommended)
 
-# Binary will be available at
-./target/release/localwebs
+**Linux/macOS:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/nvquanghuy/localwebs/master/install.sh | bash
 ```
+
+**Windows (PowerShell):**
+```powershell
+irm https://raw.githubusercontent.com/nvquanghuy/localwebs/master/install.ps1 | iex
+```
+
+### Alternative Methods
+
+**From Cargo:**
+```bash
+cargo install --git https://github.com/nvquanghuy/localwebs.git
+```
+
+**From Source:**
+```bash
+git clone https://github.com/nvquanghuy/localwebs.git
+cd localwebs
+make install
+# Or: cargo build --release && cp target/release/localwebs ~/.local/bin/
+```
+
+**Download Binary:**
+- Go to [Releases](https://github.com/nvquanghuy/localwebs/releases/latest)
+- Download for your platform
+- Extract and run
 
 ## Usage
 
