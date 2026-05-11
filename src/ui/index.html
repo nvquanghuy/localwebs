@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LocalWebs - Service Portal</title>
+    <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌐 LocalWebs</h1>
+            <p class="subtitle">Your local service portal</p>
+            <button id="refresh-btn" class="refresh-btn">🔄 Refresh</button>
+        </header>
+
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Scanning for services...</p>
+        </div>
+
+        <div id="services-grid" class="services-grid"></div>
+
+        <div id="empty-state" class="empty-state" style="display: none;">
+            <p>No services detected</p>
+            <small>Start a service on a common port and refresh to see it appear</small>
+        </div>
+    </div>
+
+    <script src="/assets/app.js"></script>
+</body>
+</html>

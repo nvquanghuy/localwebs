@@ -1,0 +1,14 @@
+[portal]
+port = 9999
+scan_timeout_ms = 500
+probe_timeout_ms = 2000
+
+[scan_ranges]
+ports = [3000, 3001, 3002, 3003, 4200, 4300, 5000, 5001, 5173, 8000, 8001, 8080, 8081, 8082, 8888, 9000, 9001]
+
+# Example known services (customize for your setup)
+# [[services]]
+# port = 3000
+# name = "React App"
+# description = "Main frontend application"
+# url_path = "/"
