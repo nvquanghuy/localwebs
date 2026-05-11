@@ -1,8 +1,8 @@
 let autoRefreshInterval;
 let currentView = localStorage.getItem('localwebs-view') || 'grid';
 let currentServices = [];
-let sortBy = localStorage.getItem('localwebs-sortBy') || 'port';
-let sortAscending = localStorage.getItem('localwebs-sortAscending') !== 'false'; // Default true
+let sortBy = localStorage.getItem('localwebs-sortBy') || 'starttime';
+let sortAscending = localStorage.getItem('localwebs-sortAscending') !== 'true'; // Default false for starttime (newest first)
 
 // Initialize UI from saved preferences
 function initializeUI() {
@@ -70,6 +70,11 @@ function sortServices(services) {
         let compareValue = 0;
 
         switch (sortBy) {
+            case 'starttime':
+                const aStart = a.start_time || 0;
+                const bStart = b.start_time || 0;
+                compareValue = bStart - aStart; // Newer first by default
+                break;
             case 'port':
                 compareValue = a.port - b.port;
                 break;
@@ -195,6 +200,18 @@ function createServiceCard(service) {
     `;
 }
 
+function formatStartTime(timestamp) {
+    if (!timestamp) return '-';
+
+    const now = Math.floor(Date.now() / 1000);
+    const elapsed = now - timestamp;
+
+    if (elapsed < 60) return 'just now';
+    if (elapsed < 3600) return `${Math.floor(elapsed / 60)}m ago`;
+    if (elapsed < 86400) return `${Math.floor(elapsed / 3600)}h ago`;
+    return `${Math.floor(elapsed / 86400)}d ago`;
+}
+
 function createServiceRow(service) {
     const statusIcon = service.is_healthy ? '🟢' : '🔴';
     const responseTime = service.response_time_ms
@@ -203,6 +220,7 @@ function createServiceRow(service) {
     const processInfo = service.process_name
         ? `${service.process_name}${service.pid ? ` (${service.pid})` : ''}`
         : '-';
+    const startTime = formatStartTime(service.start_time);
 
     return `
         <tr class="service-row">
@@ -211,6 +229,7 @@ function createServiceRow(service) {
             <td class="name-cell">
                 <div class="name-primary">${escapeHtml(service.name)}</div>
                 ${service.title ? `<div class="name-secondary">${escapeHtml(service.title)}</div>` : ''}
+                ${service.start_time ? `<div class="name-tertiary">Started ${startTime}</div>` : ''}
             </td>
             <td class="process-cell">${processInfo}</td>
             <td class="response-cell">${responseTime}</td>

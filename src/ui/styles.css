@@ -324,6 +324,13 @@ header h1 {
     color: #666;
 }
 
+.name-tertiary {
+    font-size: 0.75rem;
+    color: #10b981;
+    font-style: italic;
+    margin-top: 0.15rem;
+}
+
 .process-cell {
     color: #666;
     font-family: monospace;

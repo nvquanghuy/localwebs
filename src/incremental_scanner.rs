@@ -164,6 +164,7 @@ impl IncrementalScanner {
                     port,
                     process_name: existing.process_name.clone(),
                     pid: existing.pid,
+                    start_time: existing.start_time,
                 };
 
                 let updated_service = detector.identify(open_port).await;

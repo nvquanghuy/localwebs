@@ -13,6 +13,7 @@ pub struct ServiceInfo {
     pub pid: Option<u32>,
     pub is_healthy: bool,
     pub response_time_ms: Option<u64>,
+    pub start_time: Option<i64>, // Unix timestamp of process start
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -30,6 +31,7 @@ pub struct OpenPort {
     pub port: u16,
     pub process_name: Option<String>,
     pub pid: Option<u32>,
+    pub start_time: Option<i64>,
 }
 
 impl OpenPort {
@@ -38,6 +40,7 @@ impl OpenPort {
             port,
             process_name: None,
             pid: None,
+            start_time: None,
         }
     }
 
@@ -46,6 +49,7 @@ impl OpenPort {
             port,
             process_name: Some(process_name),
             pid,
+            start_time: None,
         }
     }
 }

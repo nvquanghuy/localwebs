@@ -70,10 +70,19 @@ impl PortScanner {
                     if address == "*" || address == "127.0.0.1" || address == "0.0.0.0"
                         || address == "localhost" || address == "[::]"
                         || address.starts_with("192.168.") || address.starts_with("10.") {
+
+                        // Get process start time if we have a PID
+                        let start_time = if let Some(pid_val) = pid {
+                            Self::get_process_start_time(pid_val)
+                        } else {
+                            None
+                        };
+
                         ports.push(OpenPort {
                             port,
                             process_name,
                             pid,
+                            start_time,
                         });
                     }
                 }
@@ -81,6 +90,33 @@ impl PortScanner {
         }
 
         ports
+    }
+
+    fn get_process_start_time(pid: u32) -> Option<i64> {
+        // Use ps to get process start time in seconds since epoch
+        // ps -o lstart= gives human-readable start time
+        // ps -o etimes= gives elapsed time in seconds
+        // We'll use etimes and calculate the start time
+
+        let output = Command::new("ps")
+            .args(["-o", "etimes=", "-p", &pid.to_string()])
+            .output()
+            .ok()?;
+
+        if !output.status.success() {
+            return None;
+        }
+
+        let elapsed_str = String::from_utf8_lossy(&output.stdout);
+        let elapsed_secs: i64 = elapsed_str.trim().parse().ok()?;
+
+        // Calculate start time = current time - elapsed time
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .ok()?
+            .as_secs() as i64;
+
+        Some(now - elapsed_secs)
     }
 
     async fn filter_localhost_http(&self, ports: Vec<OpenPort>) -> Vec<OpenPort> {

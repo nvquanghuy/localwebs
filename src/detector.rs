@@ -49,6 +49,7 @@ impl ServiceDetector {
                 pid: port.pid,
                 is_healthy: false,
                 response_time_ms: None,
+                start_time: port.start_time,
             };
         }
 
@@ -67,6 +68,7 @@ impl ServiceDetector {
             pid: port.pid,
             is_healthy: false,
             response_time_ms: None,
+            start_time: port.start_time,
         }
     }
 
@@ -102,6 +104,7 @@ impl ServiceDetector {
             pid: port.pid,
             is_healthy,
             response_time_ms: response_time,
+            start_time: port.start_time,
         }
     }
 
@@ -144,6 +147,7 @@ impl ServiceDetector {
             pid: port.pid,
             is_healthy: true,
             response_time_ms: Some(response_time_ms),
+            start_time: port.start_time,
         })
     }
 
