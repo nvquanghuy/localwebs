@@ -1,9 +1,14 @@
 let autoRefreshInterval;
+let currentView = 'grid'; // 'grid' or 'list'
+let currentServices = [];
+let sortBy = 'port';
+let sortAscending = true;
 
 async function fetchServices() {
     try {
         const response = await fetch('/api/services');
         const services = await response.json();
+        currentServices = services;
         displayServices(services);
     } catch (error) {
         console.error('Failed to fetch services:', error);
@@ -13,34 +18,115 @@ async function fetchServices() {
 
 function displayServices(services) {
     const grid = document.getElementById('services-grid');
+    const list = document.getElementById('services-list');
     const loading = document.getElementById('loading');
     const emptyState = document.getElementById('empty-state');
+    const controls = document.getElementById('controls');
+    const serviceCount = document.getElementById('service-count');
 
     loading.style.display = 'none';
 
     if (services.length === 0) {
         grid.innerHTML = '';
+        list.innerHTML = '';
         emptyState.style.display = 'block';
+        controls.style.display = 'none';
         return;
     }
 
     emptyState.style.display = 'none';
+    controls.style.display = 'flex';
+    serviceCount.textContent = services.length;
+
+    // Sort services
+    const sortedServices = sortServices(services);
+
+    if (currentView === 'grid') {
+        displayGridView(sortedServices);
+    } else {
+        displayListView(sortedServices);
+    }
+}
+
+function sortServices(services) {
+    const sorted = [...services];
+
+    sorted.sort((a, b) => {
+        let compareValue = 0;
+
+        switch (sortBy) {
+            case 'port':
+                compareValue = a.port - b.port;
+                break;
+            case 'name':
+                compareValue = a.name.localeCompare(b.name);
+                break;
+            case 'status':
+                compareValue = (b.is_healthy ? 1 : 0) - (a.is_healthy ? 1 : 0);
+                break;
+            case 'response':
+                const aTime = a.response_time_ms || 9999;
+                const bTime = b.response_time_ms || 9999;
+                compareValue = aTime - bTime;
+                break;
+        }
+
+        return sortAscending ? compareValue : -compareValue;
+    });
+
+    return sorted;
+}
+
+function displayGridView(services) {
+    const grid = document.getElementById('services-grid');
+    const list = document.getElementById('services-list');
+
+    grid.style.display = 'grid';
+    list.style.display = 'none';
+
     grid.innerHTML = services.map(service => createServiceCard(service)).join('');
 
     // Add click listeners to cards
     document.querySelectorAll('.service-card').forEach((card, index) => {
         card.addEventListener('click', () => {
-            // Use the same hostname/IP that user accessed the portal with
             const serviceUrl = buildServiceUrl(services[index].port);
             window.open(serviceUrl, '_blank');
         });
     });
 }
 
-function buildServiceUrl(port) {
-    // Use the current hostname instead of hardcoded 127.0.0.1
-    const hostname = window.location.hostname;
-    return `http://${hostname}:${port}`;
+function displayListView(services) {
+    const grid = document.getElementById('services-grid');
+    const list = document.getElementById('services-list');
+
+    grid.style.display = 'none';
+    list.style.display = 'block';
+
+    list.innerHTML = `
+        <table class="services-table">
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Port</th>
+                    <th>Name</th>
+                    <th>Process</th>
+                    <th>Response</th>
+                    <th>Source</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${services.map(service => createServiceRow(service)).join('')}
+            </tbody>
+        </table>
+    `;
+
+    // Add click listeners to rows
+    document.querySelectorAll('.service-row').forEach((row, index) => {
+        row.addEventListener('click', () => {
+            const serviceUrl = buildServiceUrl(services[index].port);
+            window.open(serviceUrl, '_blank');
+        });
+    });
 }
 
 function createServiceCard(service) {
@@ -94,6 +180,35 @@ function createServiceCard(service) {
     `;
 }
 
+function createServiceRow(service) {
+    const statusIcon = service.is_healthy ? '🟢' : '🔴';
+    const responseTime = service.response_time_ms
+        ? `${service.response_time_ms}ms`
+        : 'N/A';
+    const processInfo = service.process_name
+        ? `${service.process_name}${service.pid ? ` (${service.pid})` : ''}`
+        : '-';
+
+    return `
+        <tr class="service-row">
+            <td class="status-cell">${statusIcon}</td>
+            <td class="port-cell"><strong>:${service.port}</strong></td>
+            <td class="name-cell">
+                <div class="name-primary">${escapeHtml(service.name)}</div>
+                ${service.title ? `<div class="name-secondary">${escapeHtml(service.title)}</div>` : ''}
+            </td>
+            <td class="process-cell">${processInfo}</td>
+            <td class="response-cell">${responseTime}</td>
+            <td class="source-cell"><span class="source-badge-small">${service.source}</span></td>
+        </tr>
+    `;
+}
+
+function buildServiceUrl(port) {
+    const hostname = window.location.hostname;
+    return `http://${hostname}:${port}`;
+}
+
 function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
@@ -103,6 +218,27 @@ function escapeHtml(text) {
 function showError() {
     const loading = document.getElementById('loading');
     loading.innerHTML = '<p style="color: white;">Failed to load services. Please try again.</p>';
+}
+
+function toggleView() {
+    currentView = currentView === 'grid' ? 'list' : 'grid';
+    const toggleBtn = document.getElementById('view-toggle-btn');
+    toggleBtn.textContent = currentView === 'grid' ? '📋 List View' : '🎴 Grid View';
+
+    displayServices(currentServices);
+}
+
+function toggleSortOrder() {
+    sortAscending = !sortAscending;
+    const sortOrderBtn = document.getElementById('sort-order-btn');
+    sortOrderBtn.textContent = sortAscending ? '↑' : '↓';
+
+    displayServices(currentServices);
+}
+
+function changeSortBy(value) {
+    sortBy = value;
+    displayServices(currentServices);
 }
 
 function startAutoRefresh() {
@@ -115,11 +251,17 @@ function stopAutoRefresh() {
     }
 }
 
+// Event listeners
 document.getElementById('refresh-btn').addEventListener('click', async () => {
     document.getElementById('loading').style.display = 'block';
     document.getElementById('services-grid').innerHTML = '';
+    document.getElementById('services-list').innerHTML = '';
     await fetchServices();
 });
+
+document.getElementById('view-toggle-btn').addEventListener('click', toggleView);
+document.getElementById('sort-select').addEventListener('change', (e) => changeSortBy(e.target.value));
+document.getElementById('sort-order-btn').addEventListener('click', toggleSortOrder);
 
 // Initial load
 fetchServices();

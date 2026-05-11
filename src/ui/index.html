@@ -11,15 +11,37 @@
         <header>
             <h1>🌐 LocalWebs</h1>
             <p class="subtitle">Your local service portal</p>
-            <button id="refresh-btn" class="refresh-btn">🔄 Refresh</button>
+            <div class="header-controls">
+                <button id="refresh-btn" class="refresh-btn">🔄 Refresh</button>
+                <button id="view-toggle-btn" class="view-toggle-btn">📋 List View</button>
+            </div>
         </header>
+
+        <div id="controls" class="controls" style="display: none;">
+            <div class="sort-controls">
+                <label>Sort by:</label>
+                <select id="sort-select">
+                    <option value="port">Port</option>
+                    <option value="name">Name</option>
+                    <option value="status">Status</option>
+                    <option value="response">Response Time</option>
+                </select>
+                <button id="sort-order-btn" class="sort-order-btn">↑</button>
+            </div>
+            <div class="service-count">
+                <span id="service-count">0</span> services
+            </div>
+        </div>
 
         <div id="loading" class="loading">
             <div class="spinner"></div>
             <p>Scanning for services...</p>
         </div>
 
-        <div id="services-grid" class="services-grid"></div>
+        <div id="services-container">
+            <div id="services-grid" class="services-grid"></div>
+            <div id="services-list" class="services-list" style="display: none;"></div>
+        </div>
 
         <div id="empty-state" class="empty-state" style="display: none;">
             <p>No services detected</p>
