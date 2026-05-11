@@ -11,14 +11,14 @@
         <header>
             <h1>🌐 LocalWebs</h1>
             <p class="subtitle">Your local service portal</p>
-            <div class="header-controls">
-                <button id="refresh-btn" class="refresh-btn">🔄 Refresh</button>
-                <button id="view-toggle-btn" class="view-toggle-btn">📋 List View</button>
-            </div>
         </header>
 
         <div id="controls" class="controls" style="display: none;">
-            <div class="sort-controls">
+            <div class="controls-left">
+                <button id="refresh-btn" class="control-btn">🔄 Refresh</button>
+                <button id="view-toggle-btn" class="control-btn">📋 List View</button>
+            </div>
+            <div class="controls-center">
                 <label>Sort by:</label>
                 <select id="sort-select">
                     <option value="port">Port</option>
@@ -28,7 +28,7 @@
                 </select>
                 <button id="sort-order-btn" class="sort-order-btn">↑</button>
             </div>
-            <div class="service-count">
+            <div class="controls-right">
                 <span id="service-count">0</span> services
             </div>
         </div>
