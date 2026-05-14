@@ -89,8 +89,8 @@ scan_timeout_ms = 500      # Timeout for port scanning
 probe_timeout_ms = 2000    # Timeout for HTTP probes
 
 [scan_ranges]
-# Fallback ports to scan if lsof is unavailable
-ports = [3000, 3001, 4200, 5000, 5173, 8000, 8080, 8081, 8888, 9000]
+# Supplemental ports to scan if lsof misses a service
+ports = [3000, 3001, 4200, 5000, 5173, 8000, 8080, 8081, 8096, 8888, 9000]
 
 # Define known services for better identification
 [[services]]

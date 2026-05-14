@@ -1,6 +1,7 @@
 use crate::models::OpenPort;
 use anyhow::Result;
 use regex::Regex;
+use std::collections::HashSet;
 use std::process::Command;
 use std::time::Duration;
 use tokio::net::TcpStream;
@@ -20,21 +21,20 @@ impl PortScanner {
     }
 
     pub async fn scan(&self) -> Vec<OpenPort> {
-        // Try lsof first
-        if let Ok(ports) = self.scan_with_lsof() {
-            if !ports.is_empty() {
-                return self.filter_localhost_http(ports).await;
-            }
-        }
+        // lsof can miss services owned by another user or exposed through container networking.
+        // Always supplement it with configured fallback probes.
+        let mut ports = match self.scan_with_lsof() {
+            Ok(ports) => self.filter_localhost_http(ports).await,
+            Err(_) => Vec::new(),
+        };
 
-        // Fallback to manual scanning
-        self.scan_fallback().await
+        ports.extend(self.scan_fallback().await);
+
+        Self::dedupe_ports(ports)
     }
 
     fn scan_with_lsof(&self) -> Result<Vec<OpenPort>> {
-        let output = Command::new("lsof")
-            .args(["-i", "-P", "-n"])
-            .output()?;
+        let output = Command::new("lsof").args(["-i", "-P", "-n"]).output()?;
 
         if !output.status.success() {
             anyhow::bail!("lsof command failed");
@@ -52,7 +52,10 @@ impl PortScanner {
         // Regex to match lsof output with flexible spacing
         // Format: COMMAND PID USER FD TYPE DEVICE SIZE NODE NAME STATE
         // Example: python3 12345 user 3u IPv4 0x123 0t0 TCP *:8000 (LISTEN)
-        let re = Regex::new(r"^(\S+)\s+(\d+)\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+TCP\s+(.+?):(\d+)\s+\(LISTEN\)").unwrap();
+        let re = Regex::new(
+            r"^(\S+)\s+(\d+)\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+TCP\s+(.+?):(\d+)\s+\(LISTEN\)",
+        )
+        .unwrap();
 
         for line in output.lines() {
             if !line.contains("LISTEN") || !line.contains("TCP") {
@@ -67,10 +70,14 @@ impl PortScanner {
 
                 // Only include localhost services or wildcard bindings
                 if let Some(port) = port {
-                    if address == "*" || address == "127.0.0.1" || address == "0.0.0.0"
-                        || address == "localhost" || address == "[::]"
-                        || address.starts_with("192.168.") || address.starts_with("10.") {
-
+                    if address == "*"
+                        || address == "127.0.0.1"
+                        || address == "0.0.0.0"
+                        || address == "localhost"
+                        || address == "[::]"
+                        || address.starts_with("192.168.")
+                        || address.starts_with("10.")
+                    {
                         // Get process start time if we have a PID
                         let start_time = if let Some(pid_val) = pid {
                             Self::get_process_start_time(pid_val)
@@ -119,6 +126,15 @@ impl PortScanner {
         Some(now - elapsed_secs)
     }
 
+    fn dedupe_ports(ports: Vec<OpenPort>) -> Vec<OpenPort> {
+        let mut seen = HashSet::new();
+
+        ports
+            .into_iter()
+            .filter(|port| seen.insert(port.port))
+            .collect()
+    }
+
     async fn filter_localhost_http(&self, ports: Vec<OpenPort>) -> Vec<OpenPort> {
         // Only keep ports that respond to TCP connections (HTTP-like services)
         let mut http_ports = Vec::new();
@@ -162,8 +178,48 @@ impl PortScanner {
 
     async fn check_port(port: u16, duration: Duration) -> bool {
         let addr = format!("127.0.0.1:{}", port);
-        timeout(duration, TcpStream::connect(addr))
-            .await
-            .is_ok()
+        matches!(timeout(duration, TcpStream::connect(addr)).await, Ok(Ok(_)))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn dedupe_ports_prefers_first_seen_metadata() {
+        let ports = vec![
+            OpenPort {
+                port: 8096,
+                process_name: Some("jellyfin".to_string()),
+                pid: Some(42),
+                start_time: Some(100),
+            },
+            OpenPort::new(8096),
+            OpenPort::new(3000),
+        ];
+
+        let deduped = PortScanner::dedupe_ports(ports);
+
+        assert_eq!(deduped.len(), 2);
+        assert_eq!(deduped[0].port, 8096);
+        assert_eq!(deduped[0].process_name.as_deref(), Some("jellyfin"));
+        assert_eq!(deduped[1].port, 3000);
+    }
+
+    #[tokio::test]
+    async fn check_port_requires_successful_connection() {
+        let listener = match tokio::net::TcpListener::bind("127.0.0.1:0").await {
+            Ok(listener) => listener,
+            Err(err) if err.kind() == std::io::ErrorKind::PermissionDenied => return,
+            Err(err) => panic!("failed to bind test listener: {err}"),
+        };
+        let port = listener.local_addr().unwrap().port();
+
+        assert!(PortScanner::check_port(port, Duration::from_millis(100)).await);
+
+        drop(listener);
+
+        assert!(!PortScanner::check_port(port, Duration::from_millis(100)).await);
     }
 }

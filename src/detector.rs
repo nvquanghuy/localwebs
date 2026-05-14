@@ -184,6 +184,7 @@ impl ServiceDetector {
             5173 => "Vite Dev Server".to_string(),
             8000 => "Python HTTP Server".to_string(),
             8080 | 8081 => "API Server".to_string(),
+            8096 => "Jellyfin".to_string(),
             8888 => "Jupyter Notebook".to_string(),
             9000 | 9001 => "Backend Service".to_string(),
             _ => "Unknown HTTP Service".to_string(),
