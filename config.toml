@@ -1,5 +1,5 @@
 [portal]
-port = 9999
+port = 4444
 scan_timeout_ms = 500
 probe_timeout_ms = 2000
 

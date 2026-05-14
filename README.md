@@ -59,14 +59,14 @@ make install
 ### Basic Usage
 
 ```bash
-# Run with default settings (port 9999)
+# Run with default settings (port 4444)
 ./target/release/localwebs
 
 # Or just
 cargo run
 ```
 
-Then open http://127.0.0.1:9999 in your browser (or whichever port you configured).
+Then open http://127.0.0.1:4444 in your browser (or whichever port you configured).
 
 ### Custom Configuration
 
@@ -84,7 +84,7 @@ Create a `config.toml` file to customize the portal:
 
 ```toml
 [portal]
-port = 9999                # Port for the portal itself
+port = 4444                # Port for the portal itself
 scan_timeout_ms = 500      # Timeout for port scanning
 probe_timeout_ms = 2000    # Timeout for HTTP probes
 

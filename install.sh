@@ -47,8 +47,8 @@ echo ""
 echo "✅ LocalWebs installed successfully!"
 echo ""
 echo "📍 Location: ${INSTALL_DIR}/localwebs"
-echo "🚀 Run: localwebs --port 9999"
-echo "🌐 Open: http://localhost:9999"
+echo "🚀 Run: localwebs"
+echo "🌐 Open: http://localhost:4444"
 echo ""
 
 if ! echo "$PATH" | tr ':' '\n' | grep -qx "$INSTALL_DIR"; then

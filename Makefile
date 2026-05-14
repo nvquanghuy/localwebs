@@ -25,7 +25,8 @@ install: release
 	@chmod +x ~/.local/bin/localwebs
 	@echo ""
 	@echo "✅ Installed to ~/.local/bin/localwebs"
-	@echo "🚀 Run: localwebs --port 9999"
+	@echo "🚀 Run: localwebs"
+	@echo "🌐 Open: http://localhost:4444"
 
 cross:
 	@echo "Building for Linux x86_64..."

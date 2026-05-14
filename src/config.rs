@@ -56,7 +56,7 @@ impl Default for ScanRanges {
 }
 
 fn default_portal_port() -> u16 {
-    9999
+    4444
 }
 
 fn default_scan_timeout() -> u64 {

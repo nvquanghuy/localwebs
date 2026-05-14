@@ -27,8 +27,8 @@ try {
     Write-Host "✅ LocalWebs installed successfully!" -ForegroundColor Green
     Write-Host ""
     Write-Host "📍 Location: ${installDir}\localwebs.exe" -ForegroundColor White
-    Write-Host "🚀 Run: localwebs --port 9999" -ForegroundColor White
-    Write-Host "🌐 Open: http://localhost:9999" -ForegroundColor White
+    Write-Host "🚀 Run: localwebs" -ForegroundColor White
+    Write-Host "🌐 Open: http://localhost:4444" -ForegroundColor White
     Write-Host ""
 
     # Check if in PATH
