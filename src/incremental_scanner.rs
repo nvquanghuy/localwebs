@@ -34,10 +34,8 @@ impl IncrementalScanner {
         let mut known = self.known_services.write().await;
 
         // Build current port set for fast lookup
-        let current_port_set: HashMap<u16, &OpenPort> = current_ports
-            .iter()
-            .map(|p| (p.port, p))
-            .collect();
+        let current_port_set: HashMap<u16, &OpenPort> =
+            current_ports.iter().map(|p| (p.port, p)).collect();
 
         // Detect new ports
         let new_ports: Vec<OpenPort> = current_ports
@@ -103,10 +101,8 @@ impl IncrementalScanner {
 
         // Probe new services
         if !new_ports.is_empty() {
-            let detector = ServiceDetector::new(
-                self.config.clone(),
-                self.config.portal.probe_timeout_ms,
-            );
+            let detector =
+                ServiceDetector::new(self.config.clone(), self.config.portal.probe_timeout_ms);
 
             for port in new_ports {
                 let service = detector.identify(port.clone()).await;
@@ -116,10 +112,8 @@ impl IncrementalScanner {
 
         // Re-probe changed services
         if !changed_ports.is_empty() {
-            let detector = ServiceDetector::new(
-                self.config.clone(),
-                self.config.portal.probe_timeout_ms,
-            );
+            let detector =
+                ServiceDetector::new(self.config.clone(), self.config.portal.probe_timeout_ms);
 
             for port in changed_ports {
                 let service = detector.identify(port.clone()).await;
@@ -149,10 +143,8 @@ impl IncrementalScanner {
 
     /// Full re-probe: updates health status and metadata for all existing services
     async fn full_reprobe(&self, known: &mut HashMap<u16, ServiceInfo>) {
-        let detector = ServiceDetector::new(
-            self.config.clone(),
-            self.config.portal.probe_timeout_ms,
-        );
+        let detector =
+            ServiceDetector::new(self.config.clone(), self.config.portal.probe_timeout_ms);
 
         // Re-probe all existing services to update health status
         let ports_to_probe: Vec<u16> = known.keys().copied().collect();

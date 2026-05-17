@@ -47,12 +47,9 @@ jobs:
         with:
           targets: ${{ matrix.target }}
 
-      - name: Install cross-compilation tools (Linux ARM)
+      - name: Configure linker (Linux ARM)
         if: matrix.target == 'aarch64-unknown-linux-musl'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y musl-tools gcc-aarch64-linux-gnu
-          rustup target add aarch64-unknown-linux-musl
+        run: echo "RUSTFLAGS=-C linker=rust-lld" >> "$GITHUB_ENV"
 
       - name: Install musl tools (Linux x86_64)
         if: matrix.target == 'x86_64-unknown-linux-musl'
@@ -61,7 +58,7 @@ jobs:
           sudo apt-get install -y musl-tools
 
       - name: Build
-        run: cargo build --release --target ${{ matrix.target }}
+        run: cargo build --release --locked --target ${{ matrix.target }}
 
       - name: Create archive (Unix)
         if: matrix.os != 'windows-latest'
