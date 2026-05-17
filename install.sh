@@ -24,7 +24,12 @@ case "$(uname -m)" in
     ;;
 esac
 
-TARBALL="localwebs-${ARCH}-unknown-${OS}-musl.tar.gz"
+# Construct target triple based on OS
+if [ "$OS" = "darwin" ]; then
+  TARBALL="localwebs-${ARCH}-apple-darwin.tar.gz"
+else
+  TARBALL="localwebs-${ARCH}-unknown-${OS}-musl.tar.gz"
+fi
 URL="https://github.com/${REPO}/releases/latest/download/${TARBALL}"
 
 echo "📦 Downloading LocalWebs for ${OS}/${ARCH}..."
