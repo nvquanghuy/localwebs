@@ -14,6 +14,7 @@ use web::{create_router, routes::AppState};
 
 #[derive(Parser)]
 #[command(name = "localwebs")]
+#[command(version)]
 #[command(about = "Service discovery portal for localhost", long_about = None)]
 struct Cli {
     #[arg(short, long, default_value = "config.toml")]
