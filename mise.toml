@@ -1,0 +1,48 @@
+[tools]
+rust = { version = "latest", components = "rustfmt,clippy" }
+
+[tasks.build]
+description = "Build debug binary"
+run = "cargo build"
+
+[tasks.release]
+description = "Build optimized release binary"
+run = "cargo build --release --locked"
+
+[tasks.run]
+description = "Run the app (http://localhost:4444)"
+run = "cargo run"
+
+[tasks.test]
+description = "Run tests"
+run = "cargo test"
+
+[tasks.fmt]
+description = "Format code"
+run = "cargo fmt"
+
+[tasks.lint]
+description = "Lint with clippy (warnings as errors)"
+run = "cargo clippy -- -D warnings"
+
+[tasks.fmt-check]
+description = "Verify formatting without modifying files"
+run = "cargo fmt --check"
+
+[tasks.check]
+description = "Format check + lint + test"
+depends = ["fmt-check", "lint", "test"]
+
+[tasks.install]
+description = "Install release binary to ~/.local/bin"
+run = """
+cargo build --release --locked
+mkdir -p ~/.local/bin
+cp target/release/localwebs ~/.local/bin/
+chmod +x ~/.local/bin/localwebs
+echo "✅ Installed to ~/.local/bin/localwebs"
+"""
+
+[tasks.clean]
+description = "Clean build artifacts"
+run = "cargo clean && rm -rf dist"
