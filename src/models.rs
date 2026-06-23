@@ -43,13 +43,4 @@ impl OpenPort {
             start_time: None,
         }
     }
-
-    pub fn with_process(port: u16, process_name: String, pid: Option<u32>) -> Self {
-        Self {
-            port,
-            process_name: Some(process_name),
-            pid,
-            start_time: None,
-        }
-    }
 }

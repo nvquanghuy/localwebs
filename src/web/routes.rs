@@ -1,4 +1,3 @@
-use crate::config::Config;
 use crate::incremental_scanner::IncrementalScanner;
 use crate::models::ServiceInfo;
 use axum::{
@@ -15,7 +14,6 @@ use tower_http::cors::CorsLayer;
 
 #[derive(Clone)]
 pub struct AppState {
-    pub config: Config,
     pub scanner: IncrementalScanner,
 }
 

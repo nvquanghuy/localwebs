@@ -39,10 +39,7 @@ async fn main() -> anyhow::Result<()> {
     let initial_services = scanner.scan().await;
     println!("✅ Found {} services", initial_services.len());
 
-    let state = Arc::new(AppState {
-        config: config.clone(),
-        scanner,
-    });
+    let state = Arc::new(AppState { scanner });
 
     // Start background scanner (scans every 5 seconds for dev environment)
     let bg_state = Arc::clone(&state);
